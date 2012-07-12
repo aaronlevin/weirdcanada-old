@@ -1,0 +1,27 @@
+{% extends "index.html" %}
+
+{% block title %}login{% endblock %}
+
+{% block content %}
+
+{% from "_formhelpers.html" import flash_message %}
+<script src="http://js.pusher.com/1.12/pusher.min.js"></script>
+<script src="static/js/wcmsg.js"></script>
+<script>
+		$('#pusher_button').live('click', function() {
+			$.ajax({
+				url: '/ajax/push',
+			});
+		});
+</script>
+
+<div class="row">
+	<div class="span4">
+		{{ flash_message() }}
+	</div>
+</div>
+
+<p><input type="submit" value="pusher" id="pusher_button"></p>
+<div id="pushing_message"></div>
+
+{% endblock %}

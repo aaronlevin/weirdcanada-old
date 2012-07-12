@@ -1,0 +1,139 @@
+{% extends "index.html" %}
+
+{% block title %}Weird Canada Administration{% endblock %}
+
+{% block content %}
+
+{% from "_formhelpers.html" import flash_message %}
+
+<!-- messaging -->
+<script src="http://js.pusher.com/1.12/pusher.min.js"></script>
+<script src="static/js/wcmsg.js"></script>
+
+<div class="row">
+	<div class="span4">
+		{{ flash_message() }}
+	</div>
+</div>
+
+<!-- Datepicker js -->
+<script>
+	$(function() {
+		$('#release-release_date').datepicker({
+			'format':'yyyy-mm-dd',
+		});
+		$('#publish_date').datepicker({
+			'format':'yyyy-mm-dd',
+		});
+	});
+</script>
+
+<!-- Add More to Form js -->
+<script src="static/js/clone_more.js"></script>
+<script>
+	var counter = Array();
+	counter['tracks'] = 0;
+	counter['artists'] = 0;
+	counter['labels'] = 0;
+	counter['contents'] = 0;
+	counter['authors'] = 0;
+	counter['images'] = -1;
+
+	$(document).ready(function() {
+		// Artist Dupe & Remove
+		$('#release-artists-click_dupe').live('click', function() {
+			clone_div('release-artists-dupe-'+counter['artists']);
+			counter['artists']++;
+		});
+		$('#release-artists-remove').live('click', function() {
+			if( counter['artists'] > 0) {
+				$('#release-artists-dupe-'+counter['artists']).remove();
+				counter['artists']--;
+			}
+		});
+		// Label Dupe and remove
+		$('#release-labels-click_dupe').live('click', function() {
+			clone_div('release-labels-dupe-'+counter['labels']);
+			counter['labels']++;
+		});
+		$('#release-labels-remove').live('click', function() {
+			if( counter['labels'] > 0 ) {
+			$('#release-labels-dupe-'+counter['labels']).remove();
+			counter['label']--;	
+		}
+		});
+		// Track dupe
+		$('#tracks-click_dupe').live('click', function() {
+			clone_div('tracks-dupe-' + counter['tracks']);
+			counter['tracks']++;
+		});
+		$('#tracks-remove').live('click', function() {
+			if( counter['tracks'] > 0 ) {
+			$('#tracks-dupe-'+counter['tracks']).remove();
+			counter['tracks']--;
+		}
+		});
+
+		// Author Dupe
+
+		$('#authors-click_dupe').live('click', function() {
+			clone_div('authors-dupe-'+counter['authors']);
+			counter['authors']++
+		});
+
+		$('#authors-remove').live('click', function() {
+			if( counter['authors'] > 0 ) {
+				$('#authors-dupe-'+counter['authors']).remove();
+				counter['authors']--;
+			}
+		});
+
+		// Content Dupe
+		
+		$('#contents-click_dupe').live('click', function() {
+			clone_div('contents-dupe-'+counter['contents']);
+			counter['contents']++
+		});
+		$('#contents-remove').live('click', function() {
+			if( counter['contents'] > 0 ) {
+				$('#contents-dupe-'+counter['contents']).remove();
+				counter['contents']--;
+			}
+		});
+
+		// Support image creation
+		$('#release-support_images-click_dupe').live('click', function() {
+			clone_div('release-support_images-dupe-'+counter['images']);
+			counter['images']++;
+		});
+		$('#release-support_images-remove').live('click', function() {
+			// Use empty instead of remove to allow for complete negation and rebuild.
+			if( counter['images'] > 0 ) {
+				$('#release-support_images-dupe-'+counter['images']).empty();
+				counter['images']--;
+			}	
+		});
+
+	});
+</script>
+
+<div class="row">
+<div class="span1">
+	<p>sidebar</p>
+</div>
+<div class="span8">
+<form method="POST" action="/admin" enctype="multipart/form-data" class="form-horizontal">
+		{{ form.hidden_tag() }}
+		{{ form.release }}
+		{{ form.contents }}
+		{{ form.section }}
+		{{ form.authors }}
+		{{ form.publish_date }}
+		{{ form.tags }}
+		{{ form.tracks }} 
+	<input type="submit" value="submit">
+</form>
+<div id="pushing_message"></div>
+</div>
+</div>
+{% endblock %}
