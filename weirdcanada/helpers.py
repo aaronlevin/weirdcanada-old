@@ -3,6 +3,26 @@ from cgi import escape
 from urlparse import urlparse, urljoin
 from flask import request, url_for, redirect
 
+def make_nice(string):
+    """This function makes nice strings out of 'sluggy' ones.
+    release_notes -> Release Notes
+    We accomplish this by:
+        1. splitting the string around '-' into fragments, preserving the numerics
+        around each fragment.
+        2. taking each fragment and splitting on '_' and capitalizing each word
+        3. forming a string out of the composites
+    """
+    return_string = ''
+    fragments = string.split('-')
+    for fragment in fragments:
+        if not fragment.isdigit():
+            words = fragment.split('_')
+            for word in words:
+                return_string += word.capitalize() + ' '
+        else:
+            return_string = return_string.rstrip() + '-' + fragment
+    return return_string.rstrip()
+
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))

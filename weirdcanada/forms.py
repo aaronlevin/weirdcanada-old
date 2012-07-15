@@ -3,24 +3,23 @@
 import re
 import datetime
 from flask import request, url_for, redirect, flash
-from flaskext.wtf import Form 
-from flaskext.wtf import DateTimeField
-from flaskext.wtf import FieldList
-from flaskext.wtf.file import FileField
-from flaskext.wtf import FormField
-from flaskext.wtf import HiddenField
-from flaskext.wtf import IntegerField
-from flaskext.wtf import PasswordField
-from flaskext.wtf import SelectField
-from flaskext.wtf import TextAreaField
-from flaskext.wtf import TextField
-from flaskext.wtf.html5 import URLField
-from flaskext.wtf import validators
-from flaskext.wtf import ListWidget
-from helpers import html_params, is_safe_url, get_redirect_target
+from flask.ext.wtf import Form 
+from flask.ext.wtf import DateTimeField
+from flask.ext.wtf import FieldList
+from flask.ext.wtf.file import FileField
+from flask.ext.wtf import FormField
+from flask.ext.wtf import HiddenField
+from flask.ext.wtf import IntegerField
+from flask.ext.wtf import PasswordField
+from flask.ext.wtf import SelectField
+from flask.ext.wtf import TextAreaField
+from flask.ext.wtf import TextField
+from flask.ext.wtf.html5 import URLField
+from flask.ext.wtf import validators
+from flask.ext.wtf import ListWidget
+from helpers import html_params, is_safe_url, get_redirect_target, make_nice
 from models import User
-from wtforms import Form as WTForm
-from wtforms.widgets import HTMLString, Select as SelectWidget
+from wtforms.widgets import HTMLString
 
 # Widget
 
@@ -29,24 +28,24 @@ class FieldWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id',field.id)
         html = [u'<div class="control-group%s">' % (' error' if field.errors else '') ]
-        html.append(u'<label for="%s" class="control-label">%s</label>' % (field.id, field.label.get_label()))
+        html.append(u'<label for="%s" class="control-label">%s</label>' % (field.id, make_nice(field.short_name)))
         html.append(u'<div class="controls">')
         if field.type == 'TextField':
-            html.append(u'<input type="text" class="input-xlarge" id="%s" name="%s">' % (field.id,field.name))
+            html.append(u'<input type="text" class="input-xlarge" id="%s" name="%s">' % (field.id,make_nice(field.short_name)))
         elif field.type == 'TextAreaField':
-            html.append(u'<textarea class="input-xlarge" id="%s" name="%s"></textarea>' % (field.id, field.name))
+            html.append(u'<textarea class="input-xlarge" id="%s" name="%s"></textarea>' % (field.id, make_nice(field.short_name)))
         elif field.type == 'DateTimeField':
             today = datetime.date.today().strftime('%Y-%m-%d')
-            html.append(u'<input id="%s" type="text" value="%s" name="%s"><button class="btn" type="button"><i class="icon-calendar"></i></button>' % (field.id,today, field.name))
+            html.append(u'<input id="%s" type="text" value="%s" name="%s"><button class="btn" type="button"><i class="icon-calendar"></i></button>' % (field.id,today, make_nice(field.short_name)))
         elif field.type == 'SelectField':
-            html.append(u'<select id="%s" name="%s">' % (field.id, field.name))
+            html.append(u'<select id="%s" name="%s">' % (field.id, make_nice(field.short_name)))
             for index, (value, label, select) in enumerate(field.iter_choices()):
                 html.append(u'<option value="%s">%s</option>' % (value, label))
             html.append(u'</select>')
         elif field.type == 'FileField':
-            html.append(u'<input id="%s" name="%s" type="file">' % (field.id, field.name))
+            html.append(u'<input id="%s" name="%s" type="file">' % (field.id, make_nice(field.short_name)))
         elif field.type == 'URLField':
-            html.append(u'<input id="%s" type="url" name="%s">' % (field.id, field.name))
+            html.append(u'<input id="%s" type="url" name="%s">' % (field.id, make_nice(field.short_name)))
 
         # render errors
         if field.errors:
@@ -74,7 +73,7 @@ class DupeListWidget(object):
         for subfield in field:
             html.append(u'%s' % (subfield()))
         html.append(u'</div>')
-        html.append(u'<div class="form-actions" ><input value="+ %s" type="button" class="btn btn-inverse" id="%s-click_dupe">  <input value="- %s" type="button" class="btn btn-inverse" id="%s-remove"></div>' % (field.label.get_label(), field.id,field.label.get_label(), field.id))
+        html.append(u'<div class="form-actions" ><input value="+ %s" type="button" class="btn btn-inverse" id="%s-click_dupe">  <input value="- %s" type="button" class="btn btn-inverse" id="%s-remove"></div>' % (make_nice(field.short_name), field.id,make_nice(field.short_name), field.id))
         return HTMLString(u''.join(html))
 
 class FormFieldWidget(object):
@@ -82,7 +81,7 @@ class FormFieldWidget(object):
     def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
         tmp_hidden = u''
-        html = [u'<div class="well"><fieldset><legend>%s</legend>' % (field.label.get_label()) ]
+        html = [u'<div class="well"><fieldset><legend>%s</legend>' % (make_nice(field.short_name)) ]
         for subfield in field:
             if subfield.type == 'CSRFTokenField' or subfield.type == 'HiddenField':
                 tmp_hidden += u'<div style="display:none;">%s</div>' % (subfield())
@@ -194,7 +193,7 @@ class ContentForm(Form):
     text = TextAreaField(u'Content', widget=FieldWidget())
 
 class PostForm(Form):
-    release = FormField(ReleaseForm, widget=FormFieldWidget())
+    release = FormField(ReleaseForm, widget=FormFieldWidget(), default='Release')
     contents = FieldList(FormField(ContentForm,widget=FormFieldWidget()), widget=DupeListWidget(), min_entries=1)
     section = SelectField(
         u'Section', 
