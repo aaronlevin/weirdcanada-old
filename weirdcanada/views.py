@@ -56,7 +56,6 @@ def logout():
 #@admin_permission.require()
 def admin():
     form = PostForm()
-    print form
     if form.validate_on_submit():
         post = Post()
         post.insert_from_form(form=form)
